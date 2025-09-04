@@ -10,14 +10,14 @@ export async function generateSummaryAction({
 }: {
   transcript: string;
   history: string[];
-}): Promise<{ summary: string }> {
+}): Promise<{ summary?: string; error?: string }> {
   try {
     const { augmentedPrompt } = await augmentUserPrompt({ transcript, history });
     const { summary } = await summarizeTranscript({ transcript: augmentedPrompt });
     return { summary };
   } catch (error) {
     console.error('Error generating summary:', error);
-    throw new Error('Failed to generate summary.');
+    return { error: 'Failed to generate summary.' };
   }
 }
 

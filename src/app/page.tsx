@@ -190,6 +190,11 @@ export default function Home() {
         .filter(Boolean);
 
       const result = await generateSummaryAction({ transcript, history });
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
       if (result.summary) {
         setSummary(result.summary);
         updateConversation(activeId, { summary: result.summary });
@@ -201,7 +206,8 @@ export default function Home() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Could not generate summary. Please try again.',
+        description:
+          error instanceof Error ? error.message : 'Could not generate summary. Please try again.',
       });
     } finally {
       setIsGenerating(false);
