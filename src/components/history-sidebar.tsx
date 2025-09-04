@@ -87,7 +87,9 @@ export function HistorySidebar({
                   </SidebarMenuItem>
                 ))
               ) : (
-                <p className="p-2 text-sm text-muted-foreground">No sessions yet.</p>
+                <SidebarMenuItem>
+                  <p className="p-2 text-sm text-muted-foreground">No sessions yet.</p>
+                </SidebarMenuItem>
               )}
             </SidebarMenu>
           </SidebarGroup>
@@ -100,9 +102,9 @@ export function HistorySidebar({
             <SidebarMenu>
               {isLoadingTopics ? (
                 <>
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-8 w-full" />
+                  <SidebarMenuItem><Skeleton className="h-8 w-full" /></SidebarMenuItem>
+                  <SidebarMenuItem><Skeleton className="h-8 w-full" /></SidebarMenuItem>
+                  <SidebarMenuItem><Skeleton className="h-8 w-full" /></SidebarMenuItem>
                 </>
               ) : suggestedTopics.length > 0 ? (
                 suggestedTopics.map((topic, index) => (
@@ -114,7 +116,9 @@ export function HistorySidebar({
                   </SidebarMenuItem>
                 ))
               ) : (
-                <p className="p-2 text-sm text-muted-foreground">No suggestions available.</p>
+                <SidebarMenuItem>
+                  <p className="p-2 text-sm text-muted-foreground">No suggestions available.</p>
+                </SidebarMenuItem>
               )}
             </SidebarMenu>
           </SidebarGroup>
