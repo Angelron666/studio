@@ -120,6 +120,9 @@ export default function Home() {
         }
     };
     recognition.onerror = (event) => {
+      if (event.error === 'no-speech') {
+        return; // Ignore no-speech errors
+      }
       toast({
         variant: 'destructive',
         title: 'Speech Recognition Error',
