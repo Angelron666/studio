@@ -195,14 +195,20 @@ export default function Home() {
       const result = await generateSummaryAction({ transcript, history });
 
       if (result.error) {
-        throw new Error(result.error);
-      }
-
-      if (result.summary) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: result.error,
+        });
+      } else if (result.summary) {
         setSummary(result.summary);
         updateConversation(activeId, { summary: result.summary });
       } else {
-        throw new Error('Failed to generate summary.');
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to generate summary.',
+        });
       }
     } catch (error) {
       console.error(error);
