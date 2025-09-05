@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   output: {schema: SummarizeTranscriptOutputSchema},
   prompt: `You are an AI assistant designed to create high-quality study notes from a given transcript.
 
-  Please summarize the following transcript into concise and user-friendly study notes:
+  Please summarize the following transcript into concise and user-friendly study notes. Make sure to include examples to illustrate key concepts.
 
   Transcript: {{{transcript}}} `,
 });
