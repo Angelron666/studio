@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, formatDistanceToNowStrict } from 'date-fns';
+import { es, enUS } from 'date-fns/locale';
 import {
   Sidebar,
   SidebarHeader,
@@ -18,6 +19,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { type Conversation } from '@/lib/types';
 import { History, PlusCircle, Lightbulb, Bot } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
+import { useLanguage } from '@/context/language-context';
 
 interface HistorySidebarProps {
   conversations: Conversation[];
@@ -36,6 +38,9 @@ export function HistorySidebar({
 }: HistorySidebarProps) {
   const [suggestedTopics, setSuggestedTopics] = useState<string[]>([]);
   const [isLoadingTopics, setIsLoadingTopics] = useState(true);
+  const { t, language } = useLanguage();
+
+  const locale = language === 'es' ? es : enUS;
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -59,7 +64,7 @@ export function HistorySidebar({
       <SidebarHeader>
         <Button onClick={onNewConversation} className="w-full">
           <PlusCircle />
-          <span>New Session</span>
+          <span>{t('new_session_button')}</span>
         </Button>
       </SidebarHeader>
       <SidebarSeparator />
@@ -68,7 +73,7 @@ export function HistorySidebar({
           <SidebarGroup>
             <SidebarGroupLabel className="flex items-center gap-2">
               <History />
-              <span>History</span>
+              <span>{t('history_title')}</span>
             </SidebarGroupLabel>
             <SidebarMenu>
               {conversations.length > 0 ? (
@@ -81,14 +86,14 @@ export function HistorySidebar({
                     >
                       <span className="font-medium">{convo.title}</span>
                       <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(convo.createdAt), { addSuffix: true })}
+                        {formatDistanceToNowStrict(new Date(convo.createdAt), { addSuffix: true, locale })}
                       </span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))
               ) : (
                 <SidebarMenuItem>
-                  <p className="p-2 text-sm text-muted-foreground">No sessions yet.</p>
+                  <p className="p-2 text-sm text-muted-foreground">{t('no_sessions_yet')}</p>
                 </SidebarMenuItem>
               )}
             </SidebarMenu>
@@ -97,7 +102,7 @@ export function HistorySidebar({
           <SidebarGroup>
             <SidebarGroupLabel className="flex items-center gap-2">
               <Lightbulb />
-              <span>Suggested Topics</span>
+              <span>{t('suggested_topics_title')}</span>
             </SidebarGroupLabel>
             <SidebarMenu>
               {isLoadingTopics ? (
@@ -117,7 +122,7 @@ export function HistorySidebar({
                 ))
               ) : (
                 <SidebarMenuItem>
-                  <p className="p-2 text-sm text-muted-foreground">No suggestions available.</p>
+                  <p className="p-2 text-sm text-muted-foreground">{t('no_suggestions_available')}</p>
                 </SidebarMenuItem>
               )}
             </SidebarMenu>

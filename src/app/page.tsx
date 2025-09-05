@@ -20,8 +20,9 @@ import {
   generateSummaryAction,
   generateTopicsAction,
 } from '@/app/actions';
-import { Download, Mic, Square, BrainCircuit, FileText } from 'lucide-react';
+import { Download, Mic, Square, BrainCircuit, FileText, Languages } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import { useLanguage } from '@/context/language-context';
 
 // Polyfill for uuid
 let hasWarned = false;
@@ -41,18 +42,22 @@ if (typeof window !== 'undefined' && !window.crypto) {
   };
 }
 
-const WelcomeScreen = () => (
-  <div className="flex flex-col items-center justify-center h-full text-center">
-    <ScribeLogo className="w-24 h-24 mb-4 text-primary" />
-    <h1 className="text-4xl font-bold font-headline">Welcome to Scribe</h1>
-    <p className="mt-2 text-lg text-muted-foreground">
-      Your personal AI-powered transcription and note-taking assistant.
-    </p>
-    <p className="mt-4">
-      Click &quot;New Session&quot; in the sidebar to start recording.
-    </p>
-  </div>
-);
+const WelcomeScreen = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-center">
+      <ScribeLogo className="w-24 h-24 mb-4 text-primary" />
+      <h1 className="text-4xl font-bold font-headline">{t('welcome_title')}</h1>
+      <p className="mt-2 text-lg text-muted-foreground">
+        {t('welcome_subtitle')}
+      </p>
+      <p className="mt-4">
+        {t('welcome_instruction')}
+      </p>
+    </div>
+  );
+};
+
 
 export default function Home() {
   const [conversations, setConversations] = useLocalStorage<Conversation[]>(
@@ -65,6 +70,7 @@ export default function Home() {
   const [transcript, setTranscript] = useState('');
   const [summary, setSummary] = useState('');
   const { toast } = useToast();
+  const { t, language, toggleLanguage } = useLanguage();
 
   const recognitionRef = React.useRef<any>(null);
   const audioChunksRef = React.useRef<Blob[]>([]);
@@ -99,15 +105,15 @@ export default function Home() {
     if (!SpeechRecognition) {
         toast({
             variant: "destructive",
-            title: "Browser not supported",
-            description: "Speech recognition is not supported in your browser.",
+            title: t('error_browser_not_supported_title'),
+            description: t('error_browser_not_supported_description'),
         });
         return;
     }
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = language === 'es' ? 'es-ES' : 'en-US';
 
     recognition.onresult = (event) => {
         const newTranscript = Array.from(event.results)
@@ -125,7 +131,7 @@ export default function Home() {
       }
       toast({
         variant: 'destructive',
-        title: 'Speech Recognition Error',
+        title: t('error_speech_recognition_title'),
         description: event.error,
       });
       console.error('Speech recognition error', event.error);
@@ -138,7 +144,7 @@ export default function Home() {
     };
 
     recognitionRef.current = recognition;
-  }, [toast, activeId, updateConversation, isRecording]);
+  }, [toast, activeId, updateConversation, isRecording, language, t]);
 
   useEffect(() => {
     setupRecognition();
@@ -160,8 +166,8 @@ export default function Home() {
         console.error("Error accessing microphone:", err);
         toast({
             variant: "destructive",
-            title: "Microphone Access Denied",
-            description: "Please allow microphone access to use this feature.",
+            title: t('error_microphone_access_denied_title'),
+            description: t('error_microphone_access_denied_description'),
         });
     }
   };
@@ -197,7 +203,7 @@ export default function Home() {
       if (result.error) {
         toast({
           variant: 'destructive',
-          title: 'Error',
+          title: t('error_generic_title'),
           description: result.error,
         });
       } else if (result.summary) {
@@ -206,17 +212,17 @@ export default function Home() {
       } else {
         toast({
             variant: 'destructive',
-            title: 'Error',
-            description: 'Failed to generate summary.',
+            title: t('error_generic_title'),
+            description: t('error_generate_summary_failed'),
         });
       }
     } catch (error) {
       console.error(error);
       toast({
         variant: 'destructive',
-        title: 'Error',
+        title: t('error_generic_title'),
         description:
-          error instanceof Error ? error.message : 'Could not generate summary. Please try again.',
+          error instanceof Error ? error.message : t('error_generate_summary_failed_generic'),
       });
     } finally {
       setIsGenerating(false);
@@ -227,7 +233,7 @@ export default function Home() {
     const newId = uuidv4();
     const newConversation: Conversation = {
       id: newId,
-      title: `Session ${conversations.length + 1}`,
+      title: `${t('session_title_prefix')} ${conversations.length + 1}`,
       transcript: '',
       summary: '',
       createdAt: new Date().toISOString(),
@@ -261,7 +267,13 @@ export default function Home() {
       <SidebarInset className="bg-background">
         <header className="flex items-center justify-between p-4 border-b">
           <ScribeLogo className="h-8 w-auto" />
-          <SettingsDialog setConversations={setConversations} setActiveId={setActiveId}/>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={toggleLanguage}>
+              <Languages />
+              <span className="sr-only">{t('toggle_language')}</span>
+            </Button>
+            <SettingsDialog setConversations={setConversations} setActiveId={setActiveId}/>
+          </div>
         </header>
 
         <main className="p-4 md:p-8 flex-1 overflow-auto">
@@ -274,16 +286,16 @@ export default function Home() {
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                        <Mic className="text-primary" />
-                      <span>Transcribe Audio</span>
+                      <span>{t('transcribe_audio_title')}</span>
                     </div>
                     <Button
                         onClick={isRecording ? handleStopRecording : handleStartRecording}
                         variant={isRecording ? 'destructive' : 'default'}
                         size="lg"
-                        className={`rounded-full w-24 ${isRecording ? 'pulsate' : ''}`}
+                        className={`rounded-full w-28 ${isRecording ? 'pulsate' : ''}`}
                     >
                         {isRecording ? <Square className="mr-2" /> : <Mic className="mr-2" />}
-                        {isRecording ? 'Stop' : 'Record'}
+                        {isRecording ? t('stop_button') : t('record_button')}
                     </Button>
                   </CardTitle>
                 </CardHeader>
@@ -294,14 +306,14 @@ export default function Home() {
                       setTranscript(e.target.value);
                       if (activeId) updateConversation(activeId, { transcript: e.target.value });
                     }}
-                    placeholder="Your live transcription will appear here..."
+                    placeholder={t('transcript_placeholder')}
                     className="min-h-[200px] text-base"
                     readOnly={isRecording}
                   />
                   {!isRecording && transcript && (
                     <Button onClick={handleGenerateSummary} disabled={isGenerating} className="mt-4">
                       <BrainCircuit className="mr-2"/>
-                      {isGenerating ? 'Generating...' : 'Generate Notes'}
+                      {isGenerating ? t('generating_notes_button_loading') : t('generate_notes_button')}
                     </Button>
                   )}
                 </CardContent>
@@ -312,7 +324,7 @@ export default function Home() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="text-accent" />
-                      <span>Study Notes</span>
+                      <span>{t('study_notes_title')}</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -330,7 +342,7 @@ export default function Home() {
                     <CardTitle className="flex items-center justify-between">
                        <div className="flex items-center gap-2">
                         <FileText className="text-accent" />
-                        <span>Study Notes</span>
+                        <span>{t('study_notes_title')}</span>
                       </div>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleDownload('txt')}><Download className="mr-2 h-4 w-4"/>TXT</Button>
