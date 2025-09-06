@@ -1,0 +1,22 @@
+{
+  "cli": {
+    "appVersionSource": "remote"
+  },
+     "build": {
+    "development": {
+      "environment": "development"
+    },
+    "preview": {
+      "environment": "preview"
+    },
+    "production": {
+      "autoIncrement": true,
+      "environment": "production"
+    },
+    "my-profile": {
+      "environment": "production"
+  }
+  }
+}
+
+
